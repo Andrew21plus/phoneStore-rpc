@@ -48,22 +48,18 @@
 
   <div id="admin-view" class="hidden">
     <h2>Admin View</h2>
-    <div class="form-group">
-      <label for="model">Model</label>
-      <input type="text" id="model">
-    </div>
-    <div class="form-group">
-      <label for="brand">Brand</label>
-      <input type="text" id="brand">
-    </div>
-    <div class="form-group">
-      <label for="price">Price</label>
-      <input type="number" id="price">
-    </div>
-    <div class="form-group">
-      <label for="imei">IMEI</label>
-      <input type="text" id="imei">
-    </div>
+      <div class="form-group">
+        <label for="model">Model</label>
+        <input type="text" id="model">
+      </div>
+      <div class="form-group">
+        <label for="brand">Brand</label>
+        <input type="text" id="brand">
+      </div>
+      <div class="form-group">
+        <label for="price">Price</label>
+        <input type="number" id="price">
+      </div>
     <button onclick="addPhone()">Add Phone</button>
     <h2>Phones List</h2>
     <table>
@@ -98,136 +94,12 @@
     </table>
   </div>
 
+  <script src="common.js"></script>
+  <script src="admin.js"></script>
+  <script src="client.js"></script>
   <script>
-    const apiUrl = '/rpc';
-
-    function rpcCall(method, params = {}) {
-      return fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ method, params })
-      })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`Failed to ${method}`);
-        }
-        return response.json();
-      });
-    }
-
-    function addPhone() {
-      const model = document.getElementById('model').value;
-      const brand = document.getElementById('brand').value;
-      const price = document.getElementById('price').value;
-      const imei = document.getElementById('imei').value;
-
-      rpcCall('addPhone', { imei, model, brand, price })
-      .then(() => {
-        // Clear the input fields
-        document.getElementById('model').value = '';
-        document.getElementById('brand').value = '';
-        document.getElementById('price').value = '';
-        document.getElementById('imei').value = '';
-        getAllPhones(); // Refresh the list after adding a phone
-      })
-      .catch(error => {
-        console.error('Error adding phone:', error);
-      });
-    }
-
-    function updatePhone(imei, model, brand, price) {
-      rpcCall('updatePhone', { imei, model, brand, price })
-      .then(() => {
-        getAllPhones(); // Refresh the list after updating a phone
-      })
-      .catch(error => {
-        console.error('Error updating phone:', error);
-      });
-    }
-
-    function deletePhone(imei) {
-      if (confirm(`Are you sure you want to delete the phone with IMEI ${imei}?`)) {
-        rpcCall('deletePhone', { imei })
-        .then(() => {
-          getAllPhones(); // Refresh the list after deleting a phone
-        })
-        .catch(error => {
-          console.error('Error deleting phone:', error);
-        });
-      }
-    }
-
-    function getAllPhones() {
-      rpcCall('getAllPhones')
-      .then(data => {
-        const phonesTable = document.getElementById('phones-table');
-        const clientPhonesTable = document.getElementById('client-phones-table');
-        phonesTable.innerHTML = '';
-        clientPhonesTable.innerHTML = '';
-        data.forEach(phone => {
-          const adminRow = `
-            <tr>
-              <td>${phone.imei}</td>
-              <td><input type="text" class="edit-input model-input" value="${phone.model}" /></td>
-              <td><input type="text" class="edit-input brand-input" value="${phone.brand}" /></td>
-              <td><input type="number" class="edit-input price-input" value="${phone.price}" /></td>
-              <td>
-                <button onclick="savePhone('${phone.imei}', this)">Save</button>
-                <button onclick="deletePhone('${phone.imei}')">Delete</button>
-              </td>
-            </tr>`;
-          phonesTable.innerHTML += adminRow;
-
-          const clientRow = `
-            <tr>
-              <td>${phone.imei}</td>
-              <td>${phone.model}</td>
-              <td>${phone.brand}</td>
-              <td>${phone.price}</td>
-              <td>
-                <button onclick="buyPhone('${phone.imei}')">Buy</button>
-              </td>
-            </tr>`;
-          clientPhonesTable.innerHTML += clientRow;
-        });
-      })
-      .catch(error => {
-        console.error('Error fetching phones:', error);
-      });
-    }
-
-    function savePhone(imei, button) {
-      const row = button.parentNode.parentNode;
-      const modelInput = row.querySelector('.model-input');
-      const brandInput = row.querySelector('.brand-input');
-      const priceInput = row.querySelector('.price-input');
-
-      const updatedModel = modelInput.value;
-      const updatedBrand = brandInput.value;
-      const updatedPrice = priceInput.value;
-
-      updatePhone(imei, updatedModel, updatedBrand, updatedPrice);
-    }
-
-    function buyPhone(imei) {
-      if (confirm(`Are you sure you want to buy the phone with IMEI ${imei}?`)) {
-        deletePhone(imei);
-      }
-    }
-
-    function showAdminView() {
-      document.getElementById('admin-view').classList.remove('hidden');
-      document.getElementById('client-view').classList.add('hidden');
-    }
-
-    function showClientView() {
-      document.getElementById('admin-view').classList.add('hidden');
-      document.getElementById('client-view').classList.remove('hidden');
-    }
-
     document.addEventListener('DOMContentLoaded', getAllPhones);
   </script>
 </body>
 </html>
+

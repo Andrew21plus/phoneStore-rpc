@@ -23,14 +23,18 @@ async function getPhoneByIMEIRPC(req, res) {
 }
 
 async function addPhoneRPC(req, res) {
-  const { imei, model, brand, price } = req.body;
+  const { model, brand, price } = req.body;
   try {
+    // Generar IMEI único
+    const imei = 'IMEI-' + Math.floor(Math.random() * 1000000000000);
+
     await Phone.create({ imei, model, brand, price });
-    res.status(201).json({ message: 'Phone added successfully' });
+    res.status(201).json({ message: 'Phone added successfully', imei });
   } catch (error) {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 }
+
 
 async function updatePhoneRPC(req, res) {
   const { imei, model, brand, price } = req.body;
