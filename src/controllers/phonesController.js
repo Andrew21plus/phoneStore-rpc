@@ -1,39 +1,67 @@
-const { JSONRPCServer } = require('jsonrpc-lite');
-const {
-  getAllPhones,
-  getPhoneByIMEI,
-  addPhone,
-  updatePhone,
-  deletePhone,
-  Phone
-} = require('../models/phone');
+const Phone = require('../models/phone');
 
-const server = new JSONRPCServer();
+async function getAllPhonesRPC(req, res) {
+  try {
+    const phones = await Phone.findAll();
+    res.json(phones);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+}
 
-server.addMethod('getAllPhones', () => {
-  return getAllPhones();
-});
+async function getPhoneByIMEIRPC(req, res) {
+  const { imei } = req.body;
+  try {
+    const phone = await Phone.findByPk(imei);
+    if (!phone) {
+      return res.status(404).json({ error: 'Phone not found' });
+    }
+    res.json(phone);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+}
 
-server.addMethod('getPhoneByIMEI', ({ imei }) => {
-  return getPhoneByIMEI(imei);
-});
+async function addPhoneRPC(req, res) {
+  const { imei, model, brand, price } = req.body;
+  try {
+    await Phone.create({ imei, model, brand, price });
+    res.status(201).json({ message: 'Phone added successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+}
 
-server.addMethod('addPhone', ({ imei, model, brand, price }) => {
-  const newPhone = new Phone(imei, model, brand, price);
-  addPhone(newPhone);
-  return newPhone;
-});
+async function updatePhoneRPC(req, res) {
+  const { imei, model, brand, price } = req.body;
+  try {
+    const phone = await Phone.findByPk(imei);
+    if (!phone) throw new Error('Phone not found');
+    await phone.update({ model, brand, price });
+    res.json({ message: `Phone with IMEI ${imei} updated successfully` });
+  } catch (error) {
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+}
 
-server.addMethod('updatePhone', ({ imei, model, brand, price }) => {
-  const updatedPhone = { model, brand, price };
-  updatePhone(imei, updatedPhone);
-  return `Phone with IMEI ${imei} updated`;
-});
+async function deletePhoneRPC(req, res) {
+  const { imei } = req.body;
+  try {
+    const phone = await Phone.findByPk(imei);
+    if (!phone) throw new Error('Phone not found');
+    await phone.destroy();
+    res.json({ message: `Phone with IMEI ${imei} deleted successfully` });
+  } catch (error) {
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+}
 
-server.addMethod('deletePhone', ({ imei }) => {
-  deletePhone(imei);
-  return `Phone with IMEI ${imei} deleted`;
-});
+module.exports = {
+  getAllPhonesRPC,
+  getPhoneByIMEIRPC,
+  addPhoneRPC,
+  updatePhoneRPC,
+  deletePhoneRPC
+};
 
-module.exports = server;
 

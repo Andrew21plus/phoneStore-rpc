@@ -1,8 +1,13 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
-
-const { getAllPhones, getPhoneByIMEI, addPhone, updatePhone, deletePhone, Phone } = require('./models/phone');
+const {
+  getAllPhonesRPC,
+  getPhoneByIMEIRPC,
+  addPhoneRPC,
+  updatePhoneRPC,
+  deletePhoneRPC
+} = require('./controllers/phonesController');
 
 const app = express();
 const PORT = 3000;
@@ -10,39 +15,31 @@ const PORT = 3000;
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
-app.post('/rpc', (req, res) => {
-  const jsonRPCRequest = req.body;
-
-  // Manejar la solicitud JSON-RPC
-  const response = handleRPCRequest(jsonRPCRequest);
-
-  // Enviar la respuesta JSON-RPC
-  res.json(response);
-});
-
-// Función para manejar las solicitudes JSON-RPC
-function handleRPCRequest(jsonRPCRequest) {
-  const { method, params, id } = jsonRPCRequest;
-
+app.post('/rpc', async (req, res) => {
+  const { method, params } = req.body;
   switch (method) {
     case 'getAllPhones':
-      return { jsonrpc: '2.0', result: getAllPhones(), id };
+      await getAllPhonesRPC(req, res);
+      break;
     case 'getPhoneByIMEI':
-      return { jsonrpc: '2.0', result: getPhoneByIMEI(params.imei), id };
+      await getPhoneByIMEIRPC(req, res);
+      break;
     case 'addPhone':
-      const newPhone = new Phone(params.imei, params.model, params.brand, params.price);
-      addPhone(newPhone);
-      return { jsonrpc: '2.0', result: newPhone, id };
+      req.body = params;
+      await addPhoneRPC(req, res);
+      break;
     case 'updatePhone':
-      updatePhone(params.imei, { model: params.model, brand: params.brand, price: params.price });
-      return { jsonrpc: '2.0', result: `Phone with IMEI ${params.imei} updated`, id };
+      req.body = params;
+      await updatePhoneRPC(req, res);
+      break;
     case 'deletePhone':
-      deletePhone(params.imei);
-      return { jsonrpc: '2.0', result: `Phone with IMEI ${params.imei} deleted`, id };
+      req.body = params;
+      await deletePhoneRPC(req, res);
+      break;
     default:
-      return { jsonrpc: '2.0', error: { code: -32601, message: 'Method not found' }, id };
+      res.status(400).json({ error: 'Unknown RPC method' });
   }
-}
+});
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

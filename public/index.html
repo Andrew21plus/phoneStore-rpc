@@ -32,57 +32,89 @@
       padding: 10px;
       border: 1px solid #ccc;
     }
+    .edit-input {
+      width: 80%;
+      margin-bottom: 5px;
+    }
+    .hidden {
+      display: none;
+    }
   </style>
 </head>
 <body>
   <h1>Phone Store RPC Client</h1>
-  <div class="form-group">
-    <label for="model">Model</label>
-    <input type="text" id="model">
-  </div>
-  <div class="form-group">
-    <label for="brand">Brand</label>
-    <input type="text" id="brand">
-  </div>
-  <div class="form-group">
-    <label for="price">Price</label>
-    <input type="number" id="price">
-  </div>
-  <div class="form-group">
-    <label for="imei">IMEI</label>
-    <input type="text" id="imei">
-  </div>
-  <button onclick="addPhone()">Add Phone</button>
-  <h2>Phones List</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>IMEI</th>
-        <th>Model</th>
-        <th>Brand</th>
-        <th>Price</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody id="phones-table">
-    </tbody>
-  </table>
-  <script>
-    const rpcEndpoint = '/rpc';
+  <button onclick="showAdminView()">Admin View</button>
+  <button onclick="showClientView()">Client View</button>
 
-    function callRPC(method, params, id) {
-      return fetch(rpcEndpoint, {
+  <div id="admin-view" class="hidden">
+    <h2>Admin View</h2>
+    <div class="form-group">
+      <label for="model">Model</label>
+      <input type="text" id="model">
+    </div>
+    <div class="form-group">
+      <label for="brand">Brand</label>
+      <input type="text" id="brand">
+    </div>
+    <div class="form-group">
+      <label for="price">Price</label>
+      <input type="number" id="price">
+    </div>
+    <div class="form-group">
+      <label for="imei">IMEI</label>
+      <input type="text" id="imei">
+    </div>
+    <button onclick="addPhone()">Add Phone</button>
+    <h2>Phones List</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>IMEI</th>
+          <th>Model</th>
+          <th>Brand</th>
+          <th>Price</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="phones-table">
+      </tbody>
+    </table>
+  </div>
+
+  <div id="client-view" class="hidden">
+    <h2>Client View</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>IMEI</th>
+          <th>Model</th>
+          <th>Brand</th>
+          <th>Price</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="client-phones-table">
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    const apiUrl = '/rpc';
+
+    function rpcCall(method, params = {}) {
+      return fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          jsonrpc: '2.0',
-          method,
-          params,
-          id
-        })
-      }).then(response => response.json());
+        body: JSON.stringify({ method, params })
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Failed to ${method}`);
+        }
+        return response.json();
+      });
     }
 
     function addPhone() {
@@ -91,75 +123,111 @@
       const price = document.getElementById('price').value;
       const imei = document.getElementById('imei').value;
 
-      callRPC('addPhone', { imei, model, brand, price }, 1).then(response => {
-        console.log(response);
-        getAllPhones();
+      rpcCall('addPhone', { imei, model, brand, price })
+      .then(() => {
+        // Clear the input fields
+        document.getElementById('model').value = '';
+        document.getElementById('brand').value = '';
+        document.getElementById('price').value = '';
+        document.getElementById('imei').value = '';
+        getAllPhones(); // Refresh the list after adding a phone
+      })
+      .catch(error => {
+        console.error('Error adding phone:', error);
       });
     }
 
-    function updatePhone() {
-      const imei = document.getElementById('imei').value;
-      const model = document.getElementById('model').value;
-      const brand = document.getElementById('brand').value;
-      const price = document.getElementById('price').value;
-
-      callRPC('updatePhone', { imei, model, brand, price }, 1).then(response => {
-        console.log(response);
-        getAllPhones();
+    function updatePhone(imei, model, brand, price) {
+      rpcCall('updatePhone', { imei, model, brand, price })
+      .then(() => {
+        getAllPhones(); // Refresh the list after updating a phone
+      })
+      .catch(error => {
+        console.error('Error updating phone:', error);
       });
     }
 
     function deletePhone(imei) {
       if (confirm(`Are you sure you want to delete the phone with IMEI ${imei}?`)) {
-        callRPC('deletePhone', { imei }, 1).then(response => {
-          console.log(response);
-          getAllPhones();
+        rpcCall('deletePhone', { imei })
+        .then(() => {
+          getAllPhones(); // Refresh the list after deleting a phone
+        })
+        .catch(error => {
+          console.error('Error deleting phone:', error);
         });
       }
     }
 
     function getAllPhones() {
-      callRPC('getAllPhones', {}, 1).then(response => {
+      rpcCall('getAllPhones')
+      .then(data => {
         const phonesTable = document.getElementById('phones-table');
+        const clientPhonesTable = document.getElementById('client-phones-table');
         phonesTable.innerHTML = '';
-        response.result.forEach(phone => {
-          const row = `
+        clientPhonesTable.innerHTML = '';
+        data.forEach(phone => {
+          const adminRow = `
+            <tr>
+              <td>${phone.imei}</td>
+              <td><input type="text" class="edit-input model-input" value="${phone.model}" /></td>
+              <td><input type="text" class="edit-input brand-input" value="${phone.brand}" /></td>
+              <td><input type="number" class="edit-input price-input" value="${phone.price}" /></td>
+              <td>
+                <button onclick="savePhone('${phone.imei}', this)">Save</button>
+                <button onclick="deletePhone('${phone.imei}')">Delete</button>
+              </td>
+            </tr>`;
+          phonesTable.innerHTML += adminRow;
+
+          const clientRow = `
             <tr>
               <td>${phone.imei}</td>
               <td>${phone.model}</td>
               <td>${phone.brand}</td>
               <td>${phone.price}</td>
               <td>
-                <button onclick="updateSelectedPhone('${phone.imei}', '${phone.model}', '${phone.brand}', '${phone.price}', this)">Update</button>
-                <button onclick="deletePhone('${phone.imei}')">Delete</button>
+                <button onclick="buyPhone('${phone.imei}')">Buy</button>
               </td>
             </tr>`;
-          phonesTable.innerHTML += row;
+          clientPhonesTable.innerHTML += clientRow;
         });
+      })
+      .catch(error => {
+        console.error('Error fetching phones:', error);
       });
     }
-    function updateSelectedPhone(imei, model, brand, price, button) {
-      document.getElementById('imei').value = imei;
-      document.getElementById('model').value = model;
-      document.getElementById('brand').value = brand;
-      document.getElementById('price').value = price;
 
-      // Cambiar el texto y la función del botón
-      button.innerHTML = "Save Changes";
-      button.onclick = function() {
-        updatePhone();
-        // Cambiar el botón de nuevo a "Update" después de actualizar
-        button.innerHTML = "Update";
-        button.onclick = function() {
-          updateSelectedPhone(imei, model, brand, price, button);
-        };
-      };
+    function savePhone(imei, button) {
+      const row = button.parentNode.parentNode;
+      const modelInput = row.querySelector('.model-input');
+      const brandInput = row.querySelector('.brand-input');
+      const priceInput = row.querySelector('.price-input');
+
+      const updatedModel = modelInput.value;
+      const updatedBrand = brandInput.value;
+      const updatedPrice = priceInput.value;
+
+      updatePhone(imei, updatedModel, updatedBrand, updatedPrice);
     }
-    // Load phones when the page is loaded
+
+    function buyPhone(imei) {
+      if (confirm(`Are you sure you want to buy the phone with IMEI ${imei}?`)) {
+        deletePhone(imei);
+      }
+    }
+
+    function showAdminView() {
+      document.getElementById('admin-view').classList.remove('hidden');
+      document.getElementById('client-view').classList.add('hidden');
+    }
+
+    function showClientView() {
+      document.getElementById('admin-view').classList.add('hidden');
+      document.getElementById('client-view').classList.remove('hidden');
+    }
+
     document.addEventListener('DOMContentLoaded', getAllPhones);
   </script>
 </body>
 </html>
-
-   
-
