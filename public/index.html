@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Phone Store RPC Client</title>
+  <title>Tienda de Teléfonos RPC</title>
   <style>
     /* Estilos generales */
     body {
@@ -34,7 +34,7 @@
       background-color: #ddd;
       color: black;
     }
-    .active {
+    .activo {
       background-color: #555;
     }
     /* Estilos específicos para los botones */
@@ -52,10 +52,10 @@
       background-color: #45a049;
     }
     /* Contenido principal */
-    .content {
+    .contenido {
       padding: 20px;
     }
-    .hidden {
+    .oculto {
       display: none;
     }
     table {
@@ -67,7 +67,7 @@
       padding: 10px;
       border: 1px solid #ccc;
     }
-    .form-group {
+    .grupo-formulario {
       margin-bottom: 15px;
     }
     label {
@@ -81,16 +81,16 @@
     button {
       margin-top: 10px;
     }
-    .edit-input {
+    .input-editar {
       width: 80%;
       margin-bottom: 5px;
     }
     /* Estilos para la imagen inicial */
-    .initial-image {
+    .imagen-inicial {
       text-align: center;
       margin-bottom: 20px;
     }
-    .initial-image img {
+    .imagen-inicial img {
       max-width: 100%;
       height: auto;
     }
@@ -98,61 +98,61 @@
 </head>
 <body>
   <div class="container">
-    <div class="initial-image">
-      <img src="https://th.bing.com/th/id/R.1469b8f4419be44fd771dcf26a67dc6a?rik=8zNapvHpUqtLEw&pid=ImgRaw&r=0" alt="Cellphone Store" style="max-width: 20%; height: auto;">
+    <div class="imagen-inicial">
+      <img src="https://th.bing.com/th/id/R.1469b8f4419be44fd771dcf26a67dc6a?rik=8zNapvHpUqtLEw&pid=ImgRaw&r=0" alt="Tienda de Teléfonos" style="max-width: 20%; height: auto;">
     </div>
 
     <div class="navbar">
-      <a href="#" class="active" onclick="showAdminView()">Admin View</a>
-      <a href="#" onclick="showClientView()">Client View</a>
+      <a href="#" class="activo" onclick="mostrarVistaAdmin()">Vista Administrador</a>
+      <a href="#" class="activo" onclick="mostrarVistaCliente()">Vista Cliente</a>
     </div>
 
-    <div id="admin-view" class="content hidden">
-      <h1>Phone Store RPC Client</h1>
-      <h2>Admin View</h2>
-      <div class="form-group">
-        <label for="model">Model</label>
-        <input type="text" id="model">
+    <div id="vista-admin" class="contenido oculto">
+      <h1>Tienda de Teléfonos RPC</h1>
+      <h2>Vista Administrador</h2>
+      <div class="grupo-formulario">
+        <label for="modelo">Modelo</label>
+        <input type="text" id="modelo">
       </div>
-      <div class="form-group">
-        <label for="brand">Brand</label>
-        <input type="text" id="brand">
+      <div class="grupo-formulario">
+        <label for="marca">Marca</label>
+        <input type="text" id="marca">
       </div>
-      <div class="form-group">
-        <label for="price">Price</label>
-        <input type="number" id="price">
+      <div class="grupo-formulario">
+        <label for="precio">Precio</label>
+        <input type="number" id="precio">
       </div>
-      <button onclick="addPhone()">Add Phone</button>
-      <h2>Phones List</h2>
+      <button onclick="agregarTelefono()">Agregar Teléfono</button>
+      <h2>Lista de Teléfonos</h2>
       <table>
         <thead>
           <tr>
             <th>IMEI</th>
-            <th>Model</th>
-            <th>Brand</th>
-            <th>Price</th>
-            <th>Actions</th>
+            <th>Modelo</th>
+            <th>Marca</th>
+            <th>Precio</th>
+            <th>Acciones</th>
           </tr>
         </thead>
-        <tbody id="phones-table">
+        <tbody id="tabla-telefonos">
         </tbody>
       </table>
     </div>
 
-    <div id="client-view" class="content hidden">
-      <h1>Phone Store RPC Client</h1>
-      <h2>Client View</h2>
+    <div id="vista-cliente" class="contenido oculto">
+      <h1>Tienda de Teléfonos RPC</h1>
+      <h2>Vista Cliente</h2>
       <table>
         <thead>
           <tr>
             <th>IMEI</th>
-            <th>Model</th>
-            <th>Brand</th>
-            <th>Price</th>
-            <th>Actions</th>
+            <th>Modelo</th>
+            <th>Marca</th>
+            <th>Precio</th>
+            <th>Acciones</th>
           </tr>
         </thead>
-        <tbody id="client-phones-table">
+        <tbody id="tabla-telefonos-cliente">
         </tbody>
       </table>
     </div>
@@ -161,34 +161,5 @@
   <script src="common.js"></script>
   <script src="admin.js"></script>
   <script src="client.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      // Ocultar las vistas de admin y cliente al inicio
-      document.getElementById('admin-view').classList.add('hidden');
-      document.getElementById('client-view').classList.add('hidden');
-    });
-
-    function showAdminView() {
-      // Mostrar vista de admin y ocultar vista de cliente
-      document.getElementById('admin-view').classList.remove('hidden');
-      document.getElementById('client-view').classList.add('hidden');
-      // Remover clase active de todas las opciones y agregarla a la opción seleccionada
-      document.querySelectorAll('.navbar a').forEach(function(el) {
-        el.classList.remove('active');
-      });
-      document.querySelector('.navbar a:nth-child(1)').classList.add('active');
-    }
-
-    function showClientView() {
-      // Mostrar vista de cliente y ocultar vista de admin
-      document.getElementById('admin-view').classList.add('hidden');
-      document.getElementById('client-view').classList.remove('hidden');
-      // Remover clase active de todas las opciones y agregarla a la opción seleccionada
-      document.querySelectorAll('.navbar a').forEach(function(el) {
-        el.classList.remove('active');
-      });
-      document.querySelector('.navbar a:nth-child(2)').classList.add('active');
-    }
-  </script>
 </body>
 </html>

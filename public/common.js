@@ -1,28 +1,29 @@
 const apiUrl = '/rpc';
 
-function rpcCall(method, params = {}) {
-  return fetch(apiUrl, {
+async function llamadaRPC(metodo, params = {}) {
+  console.log('Llamada RPC:', metodo, params); // Log para depuración
+  const response = await fetch(apiUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ method, params })
-  })
-  .then(response => {
-    if (!response.ok) {
-      throw new Error(`Failed to ${method}`);
-    }
-    return response.json();
+    body: JSON.stringify({ metodo, params })
   });
+  if (!response.ok) {
+    return response.json().then(error => {
+      throw new Error(error.error || `Error al ${metodo}`);
+    });
+  }
+  return await response.json();
 }
 
-function getAllPhones() {
-  rpcCall('getAllPhones')
+function obtenerTodosLosTelefonos() {
+  llamadaRPC('obtenerTodosLosTelefonos')
   .then(data => {
-    populateAdminTable(data);
-    populateClientTable(data);
+    llenarTablaAdmin(data);
+    llenarTablaCliente(data);
   })
   .catch(error => {
-    console.error('Error fetching phones:', error);
+    console.error('Error al obtener los teléfonos:', error);
   });
 }

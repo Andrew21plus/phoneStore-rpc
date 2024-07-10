@@ -2,11 +2,11 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
 const {
-  getAllPhonesRPC,
-  getPhoneByIMEIRPC,
-  addPhoneRPC,
-  updatePhoneRPC,
-  deletePhoneRPC
+  obtenerTodosLosTelefonos,
+  obtenerTelefonoPorIMEI,
+  agregarTelefono,
+  actualizarTelefono,
+  eliminarTelefono
 } = require('./controllers/phonesController');
 
 const app = express();
@@ -16,34 +16,34 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
 app.post('/rpc', async (req, res) => {
-  const { method, params } = req.body;
-  switch (method) {
-    case 'getAllPhones':
-      await getAllPhonesRPC(req, res);
+  const { metodo, params } = req.body;
+  switch (metodo) {
+    case 'obtenerTodosLosTelefonos':
+      await obtenerTodosLosTelefonos(req, res);
       break;
-    case 'getPhoneByIMEI':
-      await getPhoneByIMEIRPC(req, res);
+    case 'obtenerTelefonoPorIMEI':
+      await obtenerTelefonoPorIMEI(req, res);
       break;
-    case 'addPhone':
+    case 'agregarTelefono':
       req.body = params;
-      await addPhoneRPC(req, res);
+      await agregarTelefono(req, res);
       break;
-    case 'updatePhone':
+    case 'actualizarTelefono':
       req.body = params;
-      await updatePhoneRPC(req, res);
+      await actualizarTelefono(req, res);
       break;
-    case 'deletePhone':
+    case 'eliminarTelefono':
       req.body = params;
-      await deletePhoneRPC(req, res);
+      await eliminarTelefono(req, res);
       break;
     default:
-      res.status(400).json({ error: 'Unknown RPC method' });
+      res.status(400).json({ error: 'Método RPC desconocido' });
   }
 });
 
 if (require.main === module) {
   app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+    console.log(`Servidor ejecutándose en el puerto ${PORT}`);
   });
 }
 

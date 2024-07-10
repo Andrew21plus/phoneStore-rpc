@@ -1,74 +1,74 @@
 const Phone = require('../models/phone');
 
-async function getAllPhonesRPC(req, res) {
+async function obtenerTodosLosTelefonos(req, res) {
   try {
-    const phones = await Phone.findAll();
-    res.json(phones);
+    const telefonos = await Phone.findAll();
+    res.json(telefonos);
   } catch (error) {
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ error: 'Error interno del servidor' });
   }
 }
 
-async function getPhoneByIMEIRPC(req, res) {
+async function obtenerTelefonoPorIMEI(req, res) {
   const { imei } = req.body;
   try {
-    const phone = await Phone.findByPk(imei);
-    if (!phone) {
-      return res.status(404).json({ error: 'Phone not found' });
+    const telefono = await Phone.findByPk(imei);
+    if (!telefono) {
+      return res.status(404).json({ error: 'Teléfono no encontrado' });
     }
-    res.json(phone);
+    res.json(telefono);
   } catch (error) {
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ error: 'Error interno del servidor' });
   }
 }
 
-async function addPhoneRPC(req, res) {
-  const { model, brand, price } = req.body;
+async function agregarTelefono(req, res) {
+  const { modelo, marca, precio } = req.body;
   try {
     const imei = 'IMEI-' + Math.floor(Math.random() * 1000000000000);
-    await Phone.create({ imei, model, brand, price });
-    res.status(201).json({ message: 'Phone added successfully', imei });
+    await Phone.create({ imei, modelo, marca, precio });
+    res.status(201).json({ mensaje: 'Teléfono agregado exitosamente', imei });
   } catch (error) {
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ error: 'Error interno del servidor' });
   }
 }
 
-async function updatePhoneRPC(req, res) {
-  const { imei, model, brand, price } = req.body;
+async function actualizarTelefono(req, res) {
+  const { imei, modelo, marca, precio } = req.body;
   try {
-    console.log(`Attempting to update phone with IMEI: ${imei}`);
-    const phone = await Phone.findByPk(imei);
-    if (!phone) {
-      return res.status(404).json({ error: 'Phone not found' });
+    console.log(`Intentando actualizar teléfono con IMEI: ${imei}`);
+    const telefono = await Phone.findByPk(imei);
+    if (!telefono) {
+      return res.status(404).json({ error: 'Teléfono no encontrado' });
     }
-    await phone.update({ model, brand, price });
-    res.json({ message: `Phone with IMEI ${imei} updated successfully` });
+    await telefono.update({ modelo, marca, precio });
+    res.json({ mensaje: `Teléfono con IMEI ${imei} actualizado exitosamente` });
   } catch (error) {
-    console.error('Error updating phone:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    console.error('Error al actualizar teléfono:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
   }
 }
 
-async function deletePhoneRPC(req, res) {
+async function eliminarTelefono(req, res) {
   const { imei } = req.body;
   try {
-    console.log(`Attempting to delete phone with IMEI: ${imei}`);
-    const phone = await Phone.findByPk(imei);
-    if (!phone) {
-      return res.status(404).json({ error: 'Phone not found' });
+    console.log(`Intentando eliminar teléfono con IMEI: ${imei}`);
+    const telefono = await Phone.findByPk(imei);
+    if (!telefono) {
+      return res.status(404).json({ error: 'Teléfono no encontrado' });
     }
-    await phone.destroy();
-    res.json({ message: `Phone with IMEI ${imei} deleted successfully` });
+    await telefono.destroy();
+    res.json({ mensaje: `Teléfono con IMEI ${imei} eliminado exitosamente` });
   } catch (error) {
-    console.error('Error deleting phone:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    console.error('Error al eliminar teléfono:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
   }
 }
 
 module.exports = {
-  getAllPhonesRPC,
-  getPhoneByIMEIRPC,
-  addPhoneRPC,
-  updatePhoneRPC,
-  deletePhoneRPC
+  obtenerTodosLosTelefonos,
+  obtenerTelefonoPorIMEI,
+  agregarTelefono,
+  actualizarTelefono,
+  eliminarTelefono
 };

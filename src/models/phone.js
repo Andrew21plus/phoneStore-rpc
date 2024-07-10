@@ -6,13 +6,13 @@ const Phone = sequelize.define('Phone', {
     type: DataTypes.STRING,
     primaryKey: true
   },
-  model: {
+  modelo: {
     type: DataTypes.STRING
   },
-  brand: {
+  marca: {
     type: DataTypes.STRING
   },
-  price: {
+  precio: {
     type: DataTypes.FLOAT
   }
 }, {
